@@ -46,11 +46,10 @@ function _colon(start::T, step, stop::T) where T
 end
 
 """
-    range(start; length, stop, step=1)
+    range(start[, stop]; length, stop, step=1)
 
-Given a starting value, construct a range either by length or from `start` to `stop`,
-optionally with a given step (defaults to 1, a [`UnitRange`](@ref)).
-One of `length` or `stop` is required.  If `length`, `stop`, and `step` are all specified, they must agree.
+Given a starting value, construct a range by specifying any two of `stop`,
+`length`, and `step`. If `length`, `stop`, and `step` are all specified, they must agree.
 
 If `length` and `stop` are provided and `step` is not, the step size will be computed
 automatically such that there are `length` linearly spaced elements in the range (a [`LinRange`](@ref)).
@@ -58,12 +57,14 @@ automatically such that there are `length` linearly spaced elements in the range
 If `step` and `stop` are provided and `length` is not, the overall range length will be computed
 automatically such that the elements are `step` spaced (a [`StepRange`](@ref)).
 
+`stop` may be specified as either a positional or keyword argument.
+
 # Examples
 ```jldoctest
-julia> range(1, length=100)
+julia> range(1, step=1, length=100)
 1:100
 
-julia> range(1, stop=100)
+julia> range(1, step=1, stop=100)
 1:100
 
 julia> range(1, step=5, length=100)
@@ -71,10 +72,24 @@ julia> range(1, step=5, length=100)
 
 julia> range(1, step=5, stop=100)
 1:5:96
+
+julia> range(1, 10, length=101)
+1.0:0.09:10.0
+
+julia> range(1, 100, step=5)
+1:5:96
 ```
 """
 range(start; length::Union{Integer,Nothing}=nothing, stop=nothing, step=nothing) =
     _range(start, step, stop, length)
+
+range(start, stop; length::Union{Integer,Nothing}=nothing, step=nothing) =
+    _range2(start, step, stop, length)
+
+_range2(start, ::Nothing, stop, ::Nothing) =
+    throw(ArgumentError("At least one of `length` or `step` must be specified"))
+
+_range2(start, step, stop, length) = _range(start, step, stop, length)
 
 # Range from start to stop: range(a, [step=s,] stop=b), no length
 _range(start, step,      stop, ::Nothing) = (:)(start, step, stop)
