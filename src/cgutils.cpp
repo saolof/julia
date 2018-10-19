@@ -556,10 +556,10 @@ static bool julia_struct_has_layout(jl_datatype_t *dt, jl_unionall_t *ua)
 
 static unsigned jl_field_align(jl_datatype_t *dt, size_t i)
 {
-    unsigned al = jl_field_offset(dt, i);
-    al |= 16;
-    al &= -al;
-    return std::min(al, jl_datatype_align(dt));
+    jl_value_t *ty = jl_field_type(dt, i);
+    size_t fsz = 0, al = 1;
+    (void)jl_islayout_inline(ty, &fsz, &al);
+    return al;
 }
 
 static Type *julia_struct_to_llvm(jl_value_t *jt, jl_unionall_t *ua, bool *isboxed)
